@@ -1,2 +1,3 @@
 # MedSurvey
-Mediation analysis for complex surveys
+MedSurvey: Mediation Analysis for Complex Surveys 
+URL: https://CRAN.R-project.org/package=MedSurvey 
