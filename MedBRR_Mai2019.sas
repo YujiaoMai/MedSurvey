@@ -1,9 +1,9 @@
 
 /***************************************************************/;
 /* SAS macro of the BRR test for mediation effects             */;
-/* Author: Yujiao Mai                                          */;
-/* Affiliation: Department of Biostatistics					   */;
-/*			St. Jude Children's Research Hospital              */;
+/* Authors: Yujiao Mai and Hui Zhang                           */;
+/* Affiliation: St. Jude Children's Research Hospital          */;
+/* Email: yujiao.mai@stjude.org and hui.zhang@stjude.org       */;
 /* Licence: MIT                                                */;
 /* Date: 2018-2019                                             */;
 /* URL: https://github.com/YujiaoMai/MedSurvey                 */;
