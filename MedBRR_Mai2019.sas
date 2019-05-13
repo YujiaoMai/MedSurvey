@@ -8,7 +8,9 @@
 /* Date: 2018-2019                                             */;
 /* URL: https://github.com/YujiaoMai/MedSurvey                 */;
 /***************************************************************/;
-
+/***************************************************************************************/;
+/* The research is sponsored by American Lebanese Syrian Associated Charities (ALSAC). */;
+/***************************************************************************************/;
 OPTIONS PS=58 LS=80 NODATE NONUMBER;
 %macro rma(ina=,RR=160);
 	%do i=0 %to &RR;
