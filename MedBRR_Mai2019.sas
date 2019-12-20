@@ -3,15 +3,14 @@
 /* SAS macro of the BRR test for mediation effects             */;
 /* Authors: Yujiao Mai and Hui Zhang                           */;
 /* Affiliation: St. Jude Children's Research Hospital          */;
-/* Email: yujiao.mai@stjude.org and hzhang@northwestern.edu    */;
+/* Email: yujiao.mai@stjude.org and hui.zhang@stjude.org       */;
 /* Licence: MIT                                                */;
 /* Date: 2018-2019                                             */;
-/* URL: https://github.com/YujiaoMai/MedSurvey                 */;
+/* URL: https://github.com/YujiaoMai/MedSurvey/                 */;
 /***************************************************************/;
-/***************************************************************************************/;
-/* The research is sponsored by American Lebanese Syrian Associated Charities (ALSAC). */;
-/***************************************************************************************/;
+
 OPTIONS PS=58 LS=80 NODATE NONUMBER;
+
 %macro rma(ina=,RR=160);
 	%do i=0 %to &RR;
 		%if %sysfunc(exist( &ina&i,data)) %then %do;
@@ -64,13 +63,14 @@ OPTIONS PS=58 LS=80 NODATE NONUMBER;
 		tn=tn+1;
 		modelmatrix[tn,1]=eqs;modelmatrix[tn,2]=char(tn);
 	end;	
-	allc=ALLCOMB(nm, 2); 
-	ncomb=nrow(allc);
+	if nm>=2 then do; allc=ALLCOMB(nm, 2);ncomb=nrow(allc); end;
+	else ncomb=0;	
 	covs='COV ';
 		do i=1 to ncomb;
 			if (i=1) then do; covs=cat(covs,'e',allc[i,1],' ', 'e',allc[i,2],'=','cov',allc[i,1],allc[i,2]); end;
 			else do; covs=cat(covs,', ','e',allc[i,1],' ', 'e',allc[i,2],'=','cov',allc[i,1],allc[i,2]); end;
 		end;
+		if covs='COV ' then do; covs='';end;
 		covs=cat(covs,';');
 	tn=tn+1;
 	modelmatrix[tn,1]=covs;modelmatrix[tn,2]=char(tn);modelmatrix[tn,4]=weightstr;
@@ -93,8 +93,7 @@ OPTIONS PS=58 LS=80 NODATE NONUMBER;
 %macro fitmodels(xvar=, yvar=, mvars=,zvars=,delim='/',datain=,rwname=,RR=, tableout=);
 		%rvo(di=&tableout);
 		%DO r=0 %TO &RR;			
-			%fitmodel(xvar='workban', yvar='numcg', mvars='sp_adltban/sp_kidsban',zvars='PRTAGE/NumKid',delim='/',
-				datain='MedData', rwname='repwgt', r=&r);
+			%fitmodel(xvar=&xvar, yvar=&yvar, mvars=&mvars,zvars=&zvars,delim=&delim,datain=&datain,rwname=&rwname, r=&r);
 			%IF &r=0 %Then %DO; DATA &tableout; SET ESTS&r; WHERE _TYPE_="PARMS"; RUN; 
 			%END; %ELSE %DO; proc append base=&tableout data=ESTS&r; WHERE _TYPE_="PARMS"; RUN;%END;
 		%END;
@@ -166,11 +165,11 @@ OPTIONS PS=58 LS=80 NODATE NONUMBER;
 	proc print data=adjpValues;run;
 	%rvo(di=Mediator);%rvo(di=abpvalues);%rvo(di=Adjps);
 %mend;
-%macro MediationBBR(xvar=, yvar=, mvars=,zvars=,delim='/',datain=,rwname=,RR=10,Fay=4,adjmethod=holm);%macro _; %mend _;
+%macro MediationBRR(xvar=, yvar=, mvars=,zvars=,delim='/',datain=,rwname=,RR=10,Fay=4,adjmethod=holm);%macro _; %mend _;
 	ODS LISTING CLOSE;ods html close;
 	%fitmodels(xvar=&xvar, yvar=&yvar, mvars=&mvars,zvars=&zvars,delim=&delim,datain=&datain,rwname=&rwname,RR=&RR, tableout=ESTSparam);
 	%rma(ina=Ests,RR=&RR);
-	proc iml;
+	proc iml;		
 		mnames=scan(&mvars, 1:( 1 + countc(&mvars, &delim)));
 		nm = prod(dimension(mnames));
 		anames=BlankStr(200);bnames=BlankStr(200);medeffs = BlankStr(200);
@@ -186,7 +185,14 @@ OPTIONS PS=58 LS=80 NODATE NONUMBER;
 	%medtests(estparm=Estsparam,anames=&as,bnames=&bs,mednames=&mvars,Fay=&Fay,RR=&RR,adjmethod=&adjmethod);	
 %mend;
 
-/** Example: Data 'MedData' can be download from https://github.com/YujiaoMai/MedSurvey **/;
-%MediationBBR(xvar='workban', yvar='numcg', mvars='sp_adltban/sp_kidsban',zvars='PRTAGE/NumKid',delim='/',
-		datain='MedData',rwname='repwgt',RR=10,Fay=4,adjmethod=HOLM HOMMEL FDR);
+/** Example: Data 'PisaMed' can be download from https://github.com/YujiaoMai/MedSurvey/ **/;
+%MediationBRR(xvar='ParenSpt', yvar='Math', mvars='StuMtv',zvars='AGE/SEX/StuAnxt',delim='/',
+		datain='PisaMed',rwname='W_FSTURWT',RR=80,Fay=4);
+/** Example: Data 'TUSMed' can be download from https://github.com/YujiaoMai/MedSurvey/ **/;
+%MediationBRR(xvar='workban', yvar='numcg', mvars='sp_adltban/sp_kidsban/sp_homeban',zvars='PRTAGE/PESEX/NumKid',delim='/',
+		datain='TUSMed',rwname='repwgt',RR=160,Fay=4,adjmethod=HOLM HOMMEL FDR);
+
+
+
+		
 
